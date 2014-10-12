@@ -181,6 +181,7 @@ public class SudokuSolver6 implements ActionListener, FocusListener
                column.setMaxWidth(25);
               }
             // MENGISI SUBGRID LANGSUNG
+           CLPtoTXT.start();
      	   puzzleParser = new PuzzleParser6();
     	   try {
 				puzzleParser.FillPuzzleFromTxt();
@@ -510,14 +511,14 @@ public class SudokuSolver6 implements ActionListener, FocusListener
          for (int i = 1; i <= tNum; i++)
            {
             evalStr = "(find-fact ((?f technique-employed)) " +
-                           "(eq ?f:priority " + i + "))";
+                           "(eq ?f:rank " + i + "))";
                            
             pv = clips.eval(evalStr);
             if (pv.size() == 0) continue;
             
             pv = pv.get(0);
 
-            messageStr = messageStr + pv.getFactSlot("priority").intValue() + ". " +
+            messageStr = messageStr + pv.getFactSlot("rank").intValue() + ". " +
                                       pv.getFactSlot("reason").stringValue() + "<br>";
            }
          pv.retain();
