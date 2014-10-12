@@ -1,5 +1,7 @@
 import java.awt.*;    
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 
 import javax.swing.*;    
@@ -8,6 +10,8 @@ import javax.swing.table.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import CLIPSJNI.*;
 
@@ -45,7 +49,7 @@ or makeInstance call, retain it and then release it after the call is made.
 */
 
 
-public class SudokuSolver implements ActionListener, FocusListener
+public class SudokuSolver6 implements ActionListener, FocusListener
   {  
    JFrame jfrm;
    JPanel mainGrid;
@@ -55,22 +59,22 @@ public class SudokuSolver implements ActionListener, FocusListener
    JButton solveButton;
    JButton techniquesButton;
    
-   PuzzleParser puzzleParser;
+   PuzzleParser6 puzzleParser;
    
-   Object resetValues[][][] = new Object[9][3][3];
+   Object resetValues[][][] = new Object[6][2][3];
    
    boolean solved = false;
    
    ResourceBundle sudokuResources;
    
-   Environment clips;
+   public Environment clips;
    boolean isExecuting = false;
    Thread executionThread;
    
    /**************/
    /* SudokuDemo */
    /**************/
-   SudokuSolver() 
+   SudokuSolver6() 
      {    
       JTable theSubGrid;
       int r, c;
@@ -109,7 +113,7 @@ public class SudokuSolver implements ActionListener, FocusListener
       
       mainGrid = new JPanel(); 
       
-      GridLayout theLayout = new GridLayout(3,3);
+      GridLayout theLayout = new GridLayout(3,2);
       theLayout.setHgap(-1);
       theLayout.setVgap(-1); 
 
@@ -152,10 +156,10 @@ public class SudokuSolver implements ActionListener, FocusListener
       
       for (r = 0; r < 3; r++)
 	  {
-	       for (c = 0; c < 3; c++)
+	       for (c = 0; c < 2; c++)
            {
             theSubGrid = 
-               new JTable(3,3)
+               new JTable(2,3)
                  {
                   public boolean isCellEditable(int rowIndex,int vColIndex) 
                     { return false; }
@@ -177,22 +181,22 @@ public class SudokuSolver implements ActionListener, FocusListener
                column.setMaxWidth(25);
               }
             // MENGISI SUBGRID LANGSUNG
-     	   puzzleParser = new PuzzleParser();
+     	   puzzleParser = new PuzzleParser6();
     	   try {
 				puzzleParser.FillPuzzleFromTxt();
 				puzzleParser.PrintPuzzle();
     	   } catch (IOException e1) {
     		   	e1.printStackTrace();	
     		}
-            for(int i=0;i<3;i++) {
+            for(int i=0;i<2;i++) {
             	for(int j=0;j<3;j++){
-            		if (puzzleParser.Puzzle[r*3+i+1][c*3+j+1]=='*')
+            		if (puzzleParser.Puzzle[r*2+i+1][c*3+j+1]=='*')
             		{
                 		theSubGrid.setValueAt(null, i, j);            			
             		}
             		else
             		{
-                		theSubGrid.setValueAt(puzzleParser.Puzzle[r*3+i+1][c*3+j+1], i, j);            			
+                		theSubGrid.setValueAt(puzzleParser.Puzzle[r*2+i+1][c*3+j+1], i, j);            			
             		}
             	}
             }
@@ -260,9 +264,10 @@ public class SudokuSolver implements ActionListener, FocusListener
       /*==========================*/
       
       clips = new Environment();
+      clips = new Environment();
       
-      clips.load("sudoku.clp");
-      clips.load("solve.clp");
+      clips.eval("(load \"sudoku6.clp\")");
+      clips.eval("(load \"solve6.clp\")");
       //clips.loadFacts("C:\\Users\\toshibapc\\workspace\\SudokuSolver\\src\\puzzles\\grid3x3-p1.clp");
       
       
@@ -287,7 +292,7 @@ public class SudokuSolver implements ActionListener, FocusListener
 	   SwingUtilities.invokeLater(
         new Runnable() 
           {    
-           public void run() { new SudokuSolver(); }  
+           public void run() { new SudokuSolver6(); }  
           });    
      }    
 
@@ -318,6 +323,7 @@ public class SudokuSolver implements ActionListener, FocusListener
             public void run()
               {
                clips.run();
+               //System.out.println("tostr"+clips.toString());
                
                SwingUtilities.invokeLater(
                   new Runnable()
@@ -361,11 +367,11 @@ public class SudokuSolver implements ActionListener, FocusListener
          solveButton.setEnabled(true);
          techniquesButton.setEnabled(false);
          
-         for (int i = 0; i < 9; i++)
+         for (int i = 0; i < 6; i++)
            {
             JTable theTable = (JTable) mainGrid.getComponent(i);
 
-            for (int r = 0; r < 3; r++)
+            for (int r = 0; r < 2; r++)
               {
                for (int c = 0; c < 3; c++)
                  { theTable.setValueAt("",r,c);  }         
@@ -384,11 +390,11 @@ public class SudokuSolver implements ActionListener, FocusListener
          techniquesButton.setEnabled(false);
 
 
-         for (int i = 0; i < 9; i++)
+         for (int i = 0; i < 6; i++)
            {
             JTable theTable = (JTable) mainGrid.getComponent(i);
 
-            for (int r = 0; r < 3; r++)
+            for (int r = 0; r < 2; r++)
               {
                for (int c = 0; c < 3; c++)
                  { 
@@ -408,32 +414,35 @@ public class SudokuSolver implements ActionListener, FocusListener
          /* Reset CLIPS. */
          /*==============*/
          
-         clips.reset();
-         clips.assertString("(phase expand-any)");
-         clips.assertString("(size 3)");
+         clips.eval("(reset)");
 
          /*======================================*/
          /* Remember the initial starting values */
          /* of the puzzle for the reset command. */
          /*======================================*/
          
-         for (int i = 0; i < 9; i++)
+         /*for (int i = 0; i < 6; i++)
            {
             JTable theTable = (JTable) mainGrid.getComponent(i);
-            int rowGroup = i / 3;
-            int colGroup = i % 3;
+            int rowGroup = i / 2;
+            int colGroup = i % 2;
             
-            for (int r = 0; r < 3; r++)
+            for (int r = 0; r < 2; r++)
               {
                for (int c = 0; c < 3; c++)
                  { 
+            	   String diagonal = "3";
+            	   if((r + (rowGroup * 2) + 1) == (c + (colGroup * 3) + 1)) diagonal = "1";
+            	   else if((r + (rowGroup * 2) + 1) + (c + (colGroup * 3) + 1) == 7) diagonal = "2";
+            	   
                   resetValues[i][r][c] = theTable.getValueAt(r,c); 
                   
                   String assertStr;
                   
-                  assertStr = "(possible (row " + (r + (rowGroup * 3) + 1) + ") " +
+                  assertStr = "(possible (row " + (r + (rowGroup * 2) + 1) + ") " +
                                         "(column " + (c + (colGroup * 3) + 1) + ") " +
                                         "(group " + (i + 1) + ") " +
+                                        "(diagonal " + diagonal + ") " +
                                         "(id " + ((i * 9) + (r * 3) + c + 1) + ") ";
                                         
                   if ((resetValues[i][r][c] == null) ||
@@ -442,11 +451,31 @@ public class SudokuSolver implements ActionListener, FocusListener
                   else
                     { assertStr = assertStr + "(value " + resetValues[i][r][c] + "))"; }
                   
-                  clips.assertString(assertStr);
-                  System.out.println(assertStr);
+                  //System.out.println("ass >>" + assertStr);
+                  //String ass = assertStr;
+                  if(clips.assertString(assertStr) != null) System.out.println("nonull");
                  }         
               }
-           }
+           }*/
+        
+        /*BufferedReader file = new BufferedReader(new FileReader("tccoba.clp"));
+		String line;
+		do{
+			line = file.readLine();
+			if(line!=null){
+				Pattern possible = Pattern.compile("\\(assert.*[^\\)]\\)\\)\\)");
+				Matcher match = possible.matcher(line);
+				String assertStr=null;
+				while(match.find()) {
+				    assertStr = match.group(0);
+				    System.out.println(assertStr);
+				}
+				if(assertStr!=null) clips.eval(assertStr);
+			}
+		}while(line!=null);
+		file.close();*/
+         
+         clips.eval("(load \"tccoba.clp\")");
 
          /*===================================*/
          /* Update the status of the buttons. */
@@ -491,6 +520,7 @@ public class SudokuSolver implements ActionListener, FocusListener
             messageStr = messageStr + pv.getFactSlot("priority").intValue() + ". " +
                                       pv.getFactSlot("reason").stringValue() + "<br>";
            }
+         pv.retain();
         
          JOptionPane.showMessageDialog(jfrm,messageStr,sudokuResources.getString("SolutionTechniques"),JOptionPane.PLAIN_MESSAGE);
         }
@@ -505,13 +535,13 @@ public class SudokuSolver implements ActionListener, FocusListener
       /* Retrieve the solution from CLIPS. */
       /*===================================*/
  
-      for (int i = 0; i < 9; i++)
+      for (int i = 0; i < 6; i++)
         {
          JTable theTable = (JTable) mainGrid.getComponent(i);
-         int rowGroup = i / 3;
-         int colGroup = i % 3;
+         int rowGroup = i / 2;
+         int colGroup = i % 2;
             
-         for (int r = 0; r < 3; r++)
+         for (int r = 0; r < 2; r++)
            {
             for (int c = 0; c < 3; c++)
               { 
@@ -522,14 +552,16 @@ public class SudokuSolver implements ActionListener, FocusListener
                  { continue; }
                   
                String evalStr = "(find-all-facts ((?f possible)) " +
-                                    "(and (eq ?f:row " + (r + (rowGroup * 3) + 1) + ") " +
+                                    "(and (eq ?f:row " + (r + (rowGroup * 2) + 1) + ") " +
                                          "(eq ?f:column " + (c + (colGroup * 3) + 1) + ")))";
-                                        
-               PrimitiveValue pv = clips.eval(evalStr);
                
-               //System.out.println(pv.size());
+               PrimitiveValue pv = clips.eval(evalStr);
+               System.out.println(evalStr);
+               
+               //pv.retain();
+               
                if (pv.size() == 0) continue;
-                  
+               
                PrimitiveValue fv = pv.get(0);
                   
                theTable.setValueAt(" " + fv.getFactSlot("value") + " ",r,c);
@@ -542,11 +574,11 @@ public class SudokuSolver implements ActionListener, FocusListener
       /* are given a '?' for their content.            */
       /*===============================================*/
          
-      for (int i = 0; i < 9; i++)
+      for (int i = 0; i < 6; i++)
         {
          JTable theTable = (JTable) mainGrid.getComponent(i);
 
-         for (int r = 0; r < 3; r++)
+         for (int r = 0; r < 2; r++)
            {
             for (int c = 0; c < 3; c++)
               { 
