@@ -53,6 +53,7 @@ public class SudokuSolver6 implements ActionListener, FocusListener
   {  
    JFrame jfrm;
    JPanel mainGrid;
+   int mode = 0; //0:input txt, 1:input clp
    
    JButton clearButton;
    JButton resetButton;
@@ -181,7 +182,10 @@ public class SudokuSolver6 implements ActionListener, FocusListener
                column.setMaxWidth(25);
               }
             // MENGISI SUBGRID LANGSUNG
-           CLPtoTXT.start();
+           //CLPtoTXT.start();
+           String input = "input.txt";
+           if(mode == 0) TXTtoCLP.start(input);
+           else if(mode == 1) CLPtoTXT.start();
      	   puzzleParser = new PuzzleParser6();
     	   try {
 				puzzleParser.FillPuzzleFromTxt();
@@ -560,8 +564,9 @@ public class SudokuSolver6 implements ActionListener, FocusListener
                System.out.println(evalStr);
                
                //pv.retain();
+               System.out.println("pvsize>>" + pv.size());
                
-               if (pv.size() == 0) continue;
+               if (pv.size() != 1) continue;
                
                PrimitiveValue fv = pv.get(0);
                   
