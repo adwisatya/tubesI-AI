@@ -183,7 +183,7 @@ public class SudokuSolver6 implements ActionListener, FocusListener
               }
             // MENGISI SUBGRID LANGSUNG
            //CLPtoTXT.start();
-           String input = "input.txt";
+           String input = "input6.txt";
            if(mode == 0) TXTtoCLP.start(input);
            else if(mode == 1) CLPtoTXT.start();
      	   puzzleParser = new PuzzleParser6();

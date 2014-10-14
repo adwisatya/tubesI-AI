@@ -66,6 +66,7 @@ public class TXTtoCLP {
 	
 	public static void addToMatrix(String line, int row){
 		for(int i=0 ; i<line.length() ; i++){
+			System.out.println(i+": " + line);
 			puzzle[row][i] = line.charAt(i);
 		}
 	}
