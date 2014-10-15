@@ -9,9 +9,9 @@ public class PuzzleParser6 {
 	{
 		Puzzle = new char[7][7];
 	}
-	public void FillPuzzleFromTxt () throws IOException
+	public void FillPuzzleFromTxt (String input) throws IOException
 	{
-		BufferedReader br = new BufferedReader(new FileReader("input6.txt"));
+		BufferedReader br = new BufferedReader(new FileReader(input));
 	    try {
 	    	
 	        String inputtxt = br.readLine();		        

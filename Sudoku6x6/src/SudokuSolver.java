@@ -49,7 +49,7 @@ or makeInstance call, retain it and then release it after the call is made.
 */
 
 
-public class SudokuSolver implements ActionListener, FocusListener
+public class SudokuSolver implements ActionListener, FocusListener, KeyListener
   {  
    JFrame jfrm;
    JPanel mainGrid;
@@ -183,18 +183,6 @@ public class SudokuSolver implements ActionListener, FocusListener
                column = theSubGrid.getColumnModel().getColumn(i);
                column.setMaxWidth(25);
               }
-            // MENGISI SUBGRID LANGSUNG
-           //CLPtoTXT.start();
-           String input = "input6.txt";
-           if(mode == 0) TXTtoCLP.start(input);
-           else if(mode == 1) CLPtoTXT.start();
-     	   puzzleParser = new PuzzleParser6();
-    	   try {
-				puzzleParser.FillPuzzleFromTxt();
-				puzzleParser.PrintPuzzle();
-    	   } catch (IOException e1) {
-    		   	e1.printStackTrace();	
-    		}
             for(int i=0;i<2;i++) {
             	for(int j=0;j<3;j++){
 //            		if (puzzleParser.Puzzle[r*2+i+1][c*3+j+1]=='*')
@@ -627,7 +615,7 @@ public class SudokuSolver implements ActionListener, FocusListener
                 else if(mode == 1) CLPtoTXT.start();
           	   puzzleParser = new PuzzleParser6();
          	   try {
-     				puzzleParser.FillPuzzleFromTxt();
+     				puzzleParser.FillPuzzleFromTxt(input);
      				puzzleParser.PrintPuzzle();
          	   } catch (IOException e1) {
          		   	e1.printStackTrace();	
@@ -635,6 +623,13 @@ public class SudokuSolver implements ActionListener, FocusListener
                for (int i = 0; i < 6; i++)
                {
                 JTable theTable = (JTable) mainGrid.getComponent(i);
+                for (int r = 0; r < 2; r++)
+                {
+                 for (int c = 0; c < 3; c++)
+                 {
+                     theTable.setValueAt("",r,c);                			                  	 
+                 }
+                }
                 for (int r = 0; r < 2; r++)
                   {
                    for (int c = 0; c < 3; c++)
@@ -791,8 +786,8 @@ public class SudokuSolver implements ActionListener, FocusListener
       jfrm.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
          
       solved = true;
-      clearButton.setEnabled(false);
-      resetButton.setEnabled(false);
+      clearButton.setEnabled(true);
+      resetButton.setEnabled(true);
       solveButton.setEnabled(false);
       techniquesButton.setEnabled(true);
            
@@ -838,5 +833,96 @@ public class SudokuSolver implements ActionListener, FocusListener
 
       theTable.clearSelection();
      }     
+   /*#####################*/
+   /* KeyListener Methods */
+   /*#####################*/
+   
+   /**************/
+   /* keyPressed */
+   /**************/
+     
+   public void keyPressed(KeyEvent e) {}
+   
+   /***************/
+   /* keyReleased */
+   /***************/
+   
+   public void keyReleased(KeyEvent e) {}
+
+   /************/
+   /* keyTyped */
+   /************/
+      
+   public void keyTyped(
+     KeyEvent e)
+     {
+      JTable theTable = (JTable) e.getComponent();
+      int row = theTable.getSelectedRow();
+      int col = theTable.getSelectedColumn();
+      
+      /*=================================*/
+      /* Cells can't be change while the */
+      /* puzzle is in solution state.    */
+      /*=================================*/
+      
+      if (solved || isExecuting) return;
+      
+      /*=================================================*/
+      /* If a cell isn't selected, ignore the typed key. */
+      /*=================================================*/
+      
+      if ((row == -1) || (col == -1)) return;
+      
+      /***************************/
+      /* Retrieve the typed key. */
+      /***************************/
+      
+      char theChar = e.getKeyChar();
+      
+      /*=======================================================*/
+      /* A backspace removes the value from the selected cell. */
+      /*=======================================================*/
+      
+      if (theChar == '\b')
+        {
+         theTable.setValueAt("",row,col); 
+         return;
+        }
+        
+      /*=========================================================*/
+      /* Any character other than the digits 1 to 9 is invalid.  */
+      /*=========================================================*/
+      
+      if ((theChar != '1') && (theChar != '2') && (theChar != '3') &&
+          (theChar != '4') && (theChar != '5') && (theChar != '6') &&
+          (theChar != '7') && (theChar != '8') && (theChar != '9'))
+        {
+         Toolkit.getDefaultToolkit().beep();
+         return;
+        }
+      
+      /*=====================================*/  
+      /* Set the value of the selected cell. */
+      /*=====================================*/  
+        
+      String theCharStr = Character.toString(theChar);
+      theTable.setValueAt(theCharStr,row,col); 
+      
+      /*===========================================*/
+      /* Remove any other occurences of this digit */
+      /* from the same 3x3 grid.                   */
+      /*===========================================*/
+      
+      for (int r = 0; r < 2; r++)
+        {
+         for (int c = 0; c < 3; c++)
+           {
+            if (((r != row) || (c != col)) &&
+                (theCharStr.equals(theTable.getValueAt(r,c))))
+              { theTable.setValueAt("",r,c);  }          
+           }
+        }
+     }
+
         
   }
