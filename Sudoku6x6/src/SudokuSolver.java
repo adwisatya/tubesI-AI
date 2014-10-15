@@ -488,60 +488,7 @@ public class SudokuSolver implements ActionListener, FocusListener, KeyListener
          /* Remember the initial starting values */
          /* of the puzzle for the reset command. */
          /*======================================*/
-         
-         /*for (int i = 0; i < 6; i++)
-           {
-            JTable theTable = (JTable) mainGrid.getComponent(i);
-            int rowGroup = i / 2;
-            int colGroup = i % 2;
-            
-            for (int r = 0; r < 2; r++)
-              {
-               for (int c = 0; c < 3; c++)
-                 { 
-            	   String diagonal = "3";
-            	   if((r + (rowGroup * 2) + 1) == (c + (colGroup * 3) + 1)) diagonal = "1";
-            	   else if((r + (rowGroup * 2) + 1) + (c + (colGroup * 3) + 1) == 7) diagonal = "2";
-            	   
-                  resetValues[i][r][c] = theTable.getValueAt(r,c); 
-                  
-                  String assertStr;
-                  
-                  assertStr = "(possible (row " + (r + (rowGroup * 2) + 1) + ") " +
-                                        "(column " + (c + (colGroup * 3) + 1) + ") " +
-                                        "(group " + (i + 1) + ") " +
-                                        "(diagonal " + diagonal + ") " +
-                                        "(id " + ((i * 9) + (r * 3) + c + 1) + ") ";
-                                        
-                  if ((resetValues[i][r][c] == null) ||
-                      (resetValues[i][r][c].equals("")))
-                    { assertStr = assertStr + "(value any))"; }
-                  else
-                    { assertStr = assertStr + "(value " + resetValues[i][r][c] + "))"; }
-                  
-                  //System.out.println("ass >>" + assertStr);
-                  //String ass = assertStr;
-                  if(clips.assertString(assertStr) != null) System.out.println("nonull");
-                 }         
-              }
-           }*/
         
-        /*BufferedReader file = new BufferedReader(new FileReader("tccoba.clp"));
-		String line;
-		do{
-			line = file.readLine();
-			if(line!=null){
-				Pattern possible = Pattern.compile("\\(assert.*[^\\)]\\)\\)\\)");
-				Matcher match = possible.matcher(line);
-				String assertStr=null;
-				while(match.find()) {
-				    assertStr = match.group(0);
-				    System.out.println(assertStr);
-				}
-				if(assertStr!=null) clips.eval(assertStr);
-			}
-		}while(line!=null);
-		file.close();*/
          
          clips.eval("(load \"tccoba.clp\")");
 
